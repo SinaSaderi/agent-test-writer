@@ -29,6 +29,7 @@ install: generate_dot_env
 	pip install --upgrade pip
 	pip install setuptools wheel --upgrade
 	pip install openai
+	pip install typing_extensions
 	pip install poetry
 	poetry lock --no-update
 	poetry install --with dev
