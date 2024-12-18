@@ -1,31 +1,26 @@
-import openai
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
-from typing import Any
+import openai
 
-# Initialize FastAPI app
-app = FastAPI(title="Code Generator API", description="API to generate code based on description using OpenAI.", version="1.0")
-
-# OpenAI API Key (replace with your actual key)
-openai.api_key = ""
+app = FastAPI(title="Code Generator API", version="1.0")
 
 # Request Model
 class CodeRequest(BaseModel):
-    description: str  # Description of the code to generate
-    language: str     # Programming language for the code (e.g., python, javascript)
+    description: str  # Code description
+    language: str     # Programming language
 
-# Response Model
-class CodeResponse(BaseModel):
-    generated_code: str
 
 # API Endpoint
-@app.post("/api/v1/generate-code", response_model=CodeResponse)
-async def generate_code(request: CodeRequest):
+@app.post("/api/v1/generate-code")
+async def generate_code(request: CodeRequest, openai_api_key: str = Query(..., description="OpenAI API key")):
     """
-    Generate code based on the provided description and programming language using OpenAI.
+    Generate code based on the provided description, language, and OpenAI API key.
     """
     try:
-        # Preprompt for OpenAI to generate professional code
+        # Set OpenAI API key
+        openai.api_key = openai_api_key
+
+        # Construct professional prompt
         preprompt = f"""
         You are a highly skilled software developer. Write clean, professional, and production-ready code in {request.language}.
         Include appropriate comments for clarity, and ensure it adheres to best practices.
@@ -38,17 +33,15 @@ async def generate_code(request: CodeRequest):
 
         # Call OpenAI GPT API
         response = openai.Completion.create(
-            model="text-davinci-003",  # GPT-3.5 model
+            model="text-davinci-003",
             prompt=preprompt,
             max_tokens=1000,
             temperature=0.7
         )
 
-        # Extract generated code
+        # Return generated code
         generated_code = response.choices[0].text.strip()
-
-        # Return the code as response
-        return CodeResponse(generated_code=generated_code)
+        return {"generated_code": generated_code}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating code: {str(e)}")
