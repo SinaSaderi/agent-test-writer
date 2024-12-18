@@ -8,7 +8,7 @@ WORKDIR /app
 COPY poetry.lock pyproject.toml ./
 
 # Install Poetry and dependencies
-RUN pip install --upgrade pip &&     pip install poetry &&     poetry config virtualenvs.create false   &&  pip install openai
+RUN pip install --upgrade pip &&     pip install poetry &&     poetry config virtualenvs.create false   &&  pip install openai && pip install typing_extensions
 
 # Install project dependencies
 ARG DEV=true
